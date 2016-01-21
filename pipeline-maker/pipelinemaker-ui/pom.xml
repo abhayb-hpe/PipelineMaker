@@ -1,0 +1,187 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+
+    <parent>
+        <groupId>com.HP.pipelinemaker</groupId>
+        <artifactId>pipelinemaker-root</artifactId>
+        <version>1.0.0-SNAPSHOT</version>
+        <relativePath>../pipelinemaker-root/pom.xml</relativePath>
+    </parent>
+    
+    <modelVersion>4.0.0</modelVersion>
+    <artifactId>pipelinemaker-ui</artifactId>
+    <packaging>war</packaging>
+
+    <name>pipelinemaker-ui</name>
+    <description>Pipeline Maker - user interface module</description>
+
+    <properties>
+        <jersey.version>1.17</jersey.version>
+
+        <banned.rs.paths>com.HP.pipelinemaker.ui</banned.rs.paths>
+        <webapp.context>sdn/ui/pipelinemaker</webapp.context>
+        <web.context.path>sdn/ui/pipelinemaker</web.context.path>
+    </properties>
+
+    <dependencies>
+        <dependency>
+            <groupId>com.hp.util</groupId>
+            <artifactId>hp-util-misc</artifactId>
+            <version>${hp-util.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.hp.util</groupId>
+            <artifactId>hp-util-rs</artifactId>
+            <version>${hp-util.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.hp.util</groupId>
+            <artifactId>hp-util-skis</artifactId>
+            <version>${hp-util.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.hp.util</groupId>
+            <artifactId>hp-util-rs</artifactId>
+            <version>${hp-util.version}</version>
+            <classifier>tests</classifier>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.hp.sdn</groupId>
+            <artifactId>sdn-of-lib</artifactId>
+            <version>${sdn.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>com.hp.sdn</groupId>
+            <artifactId>sdn-common-misc</artifactId>
+            <version>${sdn.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.hp.sdn</groupId>
+            <artifactId>sdn-adm-rs-misc</artifactId>
+            <version>${sdn.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.hp.sdn</groupId>
+            <artifactId>sdn-adm-rs-misc</artifactId>
+            <version>${sdn.version}</version>
+            <classifier>tests</classifier>
+            <scope>test</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>com.HP.pipelinemaker</groupId>
+            <artifactId>pipelinemaker-model</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.HP.pipelinemaker</groupId>
+            <artifactId>pipelinemaker-api</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>com.sun.jersey</groupId>
+            <artifactId>jersey-server</artifactId>
+            <version>${jersey.version}</version>
+            <scope>compile</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.sun.jersey.jersey-test-framework</groupId>
+            <artifactId>jersey-test-framework-grizzly</artifactId>
+            <version>${jersey.version}</version>
+            <scope>test</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-databind</artifactId>
+            <version>2.1.4</version>
+            <scope>compile</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>commons-configuration</groupId>
+            <artifactId>commons-configuration</artifactId>
+            <version>1.6</version>
+        </dependency>
+
+<!--
+        <dependency>
+            <groupId>org.osgi</groupId>
+            <artifactId>org.osgi.core</artifactId>
+            <version>4.3.1</version>
+        </dependency>
+
+        <dependency>
+            <groupId>com.HP.pipelinemaker</groupId>
+            <artifactId>pipelinemaker-api</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+-->
+    </dependencies>
+
+    <build>
+        <plugins>
+            <!-- to generate the MANIFEST-FILE required by the bundle -->
+            <plugin>
+                <groupId>org.apache.felix</groupId>
+                <artifactId>maven-bundle-plugin</artifactId>
+                <version>2.3.6</version>
+                <extensions>true</extensions>
+                <executions>
+                    <execution>
+                        <id>bundle-manifest</id>
+                        <phase>process-classes</phase>
+                        <goals>
+                            <goal>manifest</goal>
+                        </goals>
+                    </execution>
+                </executions>
+                <configuration>
+                    <manifestLocation>${project.build.directory}/META-INF</manifestLocation>
+                    <supportedProjectTypes>
+                        <supportedProjectType>bundle</supportedProjectType>
+                        <supportedProjectType>war</supportedProjectType>
+                    </supportedProjectTypes>
+                    <instructions>
+                        <Import-Package>com.sun.jersey.api.core,
+                            com.sun.jersey.spi.container.servlet,
+                            com.sun.jersey.server.impl.container.servlet,
+                            com.hp.util.rs,
+                            com.hp.util.rs.auth,
+                            com.hp.sdn.rs.misc,
+                            com.hp.sdn.ui.misc,*
+                        </Import-Package>
+                        <Export-Package>!${banned.rs.paths}</Export-Package>
+                        <Webapp-Context>${webapp.context}</Webapp-Context>
+                        <Web-ContextPath>${web.context.path}</Web-ContextPath>
+                    </instructions>
+                </configuration>
+            </plugin>
+
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-war-plugin</artifactId>
+                <version>2.2</version>
+                <configuration>
+                    <packagingExcludes>WEB-INF/lib/*.jar</packagingExcludes>
+                    <attachClasses>true</attachClasses>
+                    <webResources>
+                        <resource>
+                            <directory>target/scr-plugin-generated</directory>
+                        </resource>
+                    </webResources>
+                    <archive>
+                        <manifestFile>${project.build.directory}/META-INF/MANIFEST.MF</manifestFile>
+                        <manifestEntries>
+                            <Bundle-ClassPath>WEB-INF/classes</Bundle-ClassPath>
+                        </manifestEntries>
+                    </archive>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
+</project>

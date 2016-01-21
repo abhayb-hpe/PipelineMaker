@@ -1,0 +1,5 @@
+id=com.HP.pipelinemaker
+name=Pipeline Maker
+version=1.0.0.SNAPSHOT
+vendor=HP
+description=Application for changing the pipeline on all connected DataPaths. 

@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+
+    <parent>
+        <groupId>com.HP.pipelinemaker</groupId>
+        <artifactId>pipelinemaker-root</artifactId>
+        <version>1.0.0-SNAPSHOT</version>
+        <relativePath>../pipelinemaker-root/pom.xml</relativePath>
+    </parent>
+
+    <modelVersion>4.0.0</modelVersion>
+    <artifactId>pipelinemaker-app</artifactId>
+    <packaging>pom</packaging>
+
+    <name>pipelinemaker-app</name>
+    <description>Pipeline Maker - application packaging module</description>
+
+    <dependencies>
+        <dependency>
+            <groupId>com.HP.pipelinemaker</groupId>
+            <artifactId>pipelinemaker-model</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.HP.pipelinemaker</groupId>
+            <artifactId>pipelinemaker-api</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.HP.pipelinemaker</groupId>
+            <artifactId>pipelinemaker-bl</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+    </dependencies>
+
+    <build>
+        <plugins>
+            <plugin>
+                <artifactId>maven-antrun-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>package-app</id>
+                        <phase>package</phase>
+                        <configuration>
+                            <tasks>
+                                <mkdir dir="target/bundles" />
+
+                                <copy todir="target/bundles/" flatten="true">
+                                    <fileset dir="/root/.m2/repository/com/HP/pipelinemaker/">
+                                        <include name="pipelinemaker-model/${project.version}/pipelinemaker-model-${project.version}.jar"/>
+                                        <include name="pipelinemaker-api/${project.version}/pipelinemaker-api-${project.version}.jar"/>
+                                        <include name="pipelinemaker-dao-api/${project.version}/pipelinemaker-dao-api-${project.version}.jar"/>
+                                        <include name="pipelinemaker-bl/${project.version}/pipelinemaker-bl-${project.version}.jar"/>
+                                        <include name="pipelinemaker-dao/${project.version}/pipelinemaker-dao-${project.version}.jar"/>
+                                        <include name="pipelinemaker-rs/${project.version}/pipelinemaker-rs-${project.version}.war"/>
+                                        <include name="pipelinemaker-ui/${project.version}/pipelinemaker-ui-${project.version}.war"/>
+                                    </fileset>
+                                    <fileset dir="${basedir}" includes="pipelinemaker.descriptor"/>
+                                </copy>
+
+                                <zip destfile="target/pipelinemaker-${project.version}.zip" basedir="target/bundles"/>
+                            </tasks>
+                        </configuration>
+                        <goals>
+                            <goal>run</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
+    
+</project>

@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<web-app version="2.5" xmlns="http://java.sun.com/xml/ns/javaee" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/web-app_2_5.xsd">
+
+    <display-name>Pipeline Maker UI</display-name>
+
+    <servlet>
+        <servlet-name>GUI REST Services</servlet-name>
+        <servlet-class>com.sun.jersey.spi.container.servlet.ServletContainer</servlet-class>
+
+        <!-- Authentication Filter -->
+        <init-param>
+            <param-name>com.sun.jersey.spi.container.ContainerRequestFilters</param-name>
+            <param-value>com.hp.util.rs.auth.AuthJerseyFilter</param-value>
+        </init-param>
+        <init-param>
+            <param-name>exclude-paths</param-name>
+            <param-value>^$</param-value>
+        </init-param>
+
+        <init-param>
+            <param-name>com.sun.jersey.config.property.resourceConfigClass</param-name>
+            <param-value>com.sun.jersey.api.core.ClassNamesResourceConfig</param-value>
+        </init-param>
+        <init-param>
+            <param-name>com.sun.jersey.config.property.classnames</param-name>
+            <param-value>
+                com.HP.pipelinemaker.ui.rs.PipelineMakerResource
+                com.hp.sdn.rs.misc.AuthenticationHandler
+            </param-value>
+        </init-param>
+    </servlet>
+
+    <servlet-mapping>
+        <servlet-name>GUI REST Services</servlet-name>
+        <url-pattern>/app/rs/*</url-pattern>
+    </servlet-mapping>
+
+    <filter>
+        <filter-name>Token Authentication Filter</filter-name>
+        <filter-class>com.hp.sdn.rs.misc.TokenAuthFilter</filter-class>
+    </filter>
+
+    <filter-mapping>
+        <filter-name>Token Authentication Filter</filter-name>
+        <url-pattern>/app/rs/*</url-pattern>
+    </filter-mapping>
+
+</web-app>
