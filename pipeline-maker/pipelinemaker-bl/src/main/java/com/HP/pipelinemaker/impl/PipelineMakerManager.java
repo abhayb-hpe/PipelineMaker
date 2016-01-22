@@ -96,15 +96,15 @@ public class PipelineMakerManager extends Thread {
 			MutableArray tableFeatureRequestBody = (MutableArray) MpBodyFactory.createRequestBody(ProtocolVersion.V_1_3,
 					MultipartType.TABLE_FEATURES);
 
-//			tableFeatureRequestBody.addTableFeatures(createICMPv4TableProperties());
-//			tableFeatureRequestBody.addTableFeatures(createARPSourceTableProperties());
-//			tableFeatureRequestBody.addTableFeatures(createARPDestinationTableProperties());
-//			tableFeatureRequestBody.addTableFeatures(createICMPv6TableProperties());
-//			tableFeatureRequestBody.addTableFeatures(createIPV6NDTargetTableProperties());
-//			tableFeatureRequestBody.addTableFeatures(createIPV6FlowTableTableProperties());
-//			tableFeatureRequestBody.addTableFeatures(createCustomMatchTableProperties());
-//			tableFeatureRequestBody.addTableFeatures(createMixedTableProperties());
-			
+			// tableFeatureRequestBody.addTableFeatures(createICMPv4TableProperties());
+			// tableFeatureRequestBody.addTableFeatures(createARPSourceTableProperties());
+			// tableFeatureRequestBody.addTableFeatures(createARPDestinationTableProperties());
+			// tableFeatureRequestBody.addTableFeatures(createICMPv6TableProperties());
+			// tableFeatureRequestBody.addTableFeatures(createIPV6NDTargetTableProperties());
+			// tableFeatureRequestBody.addTableFeatures(createIPV6FlowTableTableProperties());
+			// tableFeatureRequestBody.addTableFeatures(createCustomMatchTableProperties());
+			// tableFeatureRequestBody.addTableFeatures(createMixedTableProperties());
+
 			tableFeatureRequestBody.addTableFeatures(hpeSDNTableTopoDiscoverARP());
 			tableFeatureRequestBody.addTableFeatures(hpeSDNTableTopoDiscoverDHCP());
 			tableFeatureRequestBody.addTableFeatures(hpeSDNTableTopoDiscoverBDDP());
@@ -2147,7 +2147,7 @@ public class PipelineMakerManager extends Thread {
 
 		tableExpWildcards.add(expWildcardTCPSequenceNumber);
 		tableExpWildcards.add(expWildcardTCPAckNumber);
-		
+
 		tableFeatures.addProp(TableFeatureFactory.createOxmProp(ProtocolVersion.V_1_3, TableFeaturePropType.WILDCARDS,
 				tableWildcards, tableExpWildcards));
 
@@ -2195,7 +2195,7 @@ public class PipelineMakerManager extends Thread {
 
 		return (MBodyTableFeatures) tableFeatures.toImmutable();
 	}
-	
+
 	public MBodyTableFeatures createMixedTableProperties() {
 
 		/*
@@ -2306,7 +2306,7 @@ public class PipelineMakerManager extends Thread {
 				.createExperimenterField(ProtocolVersion.V_1_3, 5, 9345, customData1);
 
 		tableExpMatchFields.add(expMatchFieldIPTTL);
-		
+
 		tableFeatures.addProp(TableFeatureFactory.createOxmProp(ProtocolVersion.V_1_3, TableFeaturePropType.MATCH,
 				tableMatchFields, tableExpMatchFields));
 
@@ -2320,7 +2320,7 @@ public class PipelineMakerManager extends Thread {
 				.createExperimenterField(ProtocolVersion.V_1_3, 5, 9345, null);
 
 		tableExpWildcards.add(expWildcardIPTTL);
-		
+
 		tableFeatures.addProp(TableFeatureFactory.createOxmProp(ProtocolVersion.V_1_3, TableFeaturePropType.WILDCARDS,
 				tableWildcards, tableExpWildcards));
 
@@ -2481,7 +2481,7 @@ public class PipelineMakerManager extends Thread {
 		tableMatchFields.put(OxmBasicFieldType.IN_PORT, false);
 		tableMatchFields.put(OxmBasicFieldType.ETH_TYPE, false);
 		tableMatchFields.put(OxmBasicFieldType.ARP_OP, false);
-		
+
 		tableFeatures.addProp(
 				TableFeatureFactory.createOxmProp(ProtocolVersion.V_1_3, TableFeaturePropType.MATCH, tableMatchFields));
 
@@ -2529,7 +2529,7 @@ public class PipelineMakerManager extends Thread {
 
 		return (MBodyTableFeatures) tableFeatures.toImmutable();
 	}
-	
+
 	public MBodyTableFeatures hpeSDNTableTopoDiscoverDHCP() {
 
 		/*
@@ -2641,7 +2641,7 @@ public class PipelineMakerManager extends Thread {
 		tableMatchFields.put(OxmBasicFieldType.IP_PROTO, false);
 		tableMatchFields.put(OxmBasicFieldType.UDP_SRC, false);
 		tableMatchFields.put(OxmBasicFieldType.UDP_DST, false);
-		
+
 		tableFeatures.addProp(
 				TableFeatureFactory.createOxmProp(ProtocolVersion.V_1_3, TableFeaturePropType.MATCH, tableMatchFields));
 
@@ -2689,7 +2689,7 @@ public class PipelineMakerManager extends Thread {
 
 		return (MBodyTableFeatures) tableFeatures.toImmutable();
 	}
-	
+
 	public MBodyTableFeatures hpeSDNTableTopoDiscoverBDDP() {
 
 		/*
@@ -2796,7 +2796,7 @@ public class PipelineMakerManager extends Thread {
 		/* Set the fields the table will match on */
 		Map<OxmBasicFieldType, Boolean> tableMatchFields = new HashMap<OxmBasicFieldType, Boolean>();
 		tableMatchFields.put(OxmBasicFieldType.ETH_TYPE, false);
-		
+
 		tableFeatures.addProp(
 				TableFeatureFactory.createOxmProp(ProtocolVersion.V_1_3, TableFeaturePropType.MATCH, tableMatchFields));
 
@@ -2844,7 +2844,7 @@ public class PipelineMakerManager extends Thread {
 
 		return (MBodyTableFeatures) tableFeatures.toImmutable();
 	}
-	
+
 	public MBodyTableFeatures hpeSDNVisibilityCopyTunnel() {
 
 		/*
@@ -2946,6 +2946,14 @@ public class PipelineMakerManager extends Thread {
 		tableFeatures.addProp(TableFeatureFactory.createActionProp(ProtocolVersion.V_1_3,
 				TableFeaturePropType.APPLY_ACTIONS_MISS, tableApplyActionsMiss));
 
+		List<MFieldExperimenter> tableExpMatchFields = new ArrayList<MFieldExperimenter>();
+		byte[] grePayload = new byte[] { 0x00, 0x03, 0x00, 0x02, 0x00, 0x02 };
+
+		MFieldExperimenter expMatchGREPayload = com.hp.of.lib.match.FieldFactory
+				.createExperimenterField(ProtocolVersion.V_1_3, 5, 9345, grePayload);
+
+		tableExpMatchFields.add(expMatchGREPayload);
+
 		/* Set the fields the table will match on */
 		Map<OxmBasicFieldType, Boolean> tableMatchFields = new HashMap<OxmBasicFieldType, Boolean>();
 		tableMatchFields.put(OxmBasicFieldType.IN_PORT, false);
@@ -2958,8 +2966,14 @@ public class PipelineMakerManager extends Thread {
 		tableMatchFields.put(OxmBasicFieldType.TCP_DST, false);
 		tableMatchFields.put(OxmBasicFieldType.UDP_SRC, false);
 		tableMatchFields.put(OxmBasicFieldType.UDP_DST, false);
-		tableFeatures.addProp(
-				TableFeatureFactory.createOxmProp(ProtocolVersion.V_1_3, TableFeaturePropType.MATCH, tableMatchFields));
+		tableFeatures.addProp(TableFeatureFactory.createOxmProp(ProtocolVersion.V_1_3, TableFeaturePropType.MATCH,
+				tableMatchFields, tableExpMatchFields));
+
+		List<MFieldExperimenter> tableExpWildcards = new ArrayList<MFieldExperimenter>();
+		MFieldExperimenter expWildcardGREPayload = com.hp.of.lib.match.FieldFactory
+				.createExperimenterField(ProtocolVersion.V_1_3, 5, 9345, null);
+
+		tableExpWildcards.add(expWildcardGREPayload);
 
 		/* Set the match fields that can be wildcarded */
 		Map<OxmBasicFieldType, Boolean> tableWildcards = new HashMap<OxmBasicFieldType, Boolean>();
@@ -2974,7 +2988,7 @@ public class PipelineMakerManager extends Thread {
 		tableWildcards.put(OxmBasicFieldType.UDP_SRC, false);
 		tableWildcards.put(OxmBasicFieldType.UDP_DST, false);
 		tableFeatures.addProp(TableFeatureFactory.createOxmProp(ProtocolVersion.V_1_3, TableFeaturePropType.WILDCARDS,
-				tableWildcards));
+				tableWildcards, tableExpWildcards));
 
 		/* Set the fields that can be modified via a WRITE instruction */
 		Map<OxmBasicFieldType, Boolean> tableWriteSetFields = new HashMap<OxmBasicFieldType, Boolean>();
@@ -3020,7 +3034,7 @@ public class PipelineMakerManager extends Thread {
 
 		return (MBodyTableFeatures) tableFeatures.toImmutable();
 	}
-	
+
 	public MBodyTableFeatures hpeSDNBlacklist() {
 
 		/*
@@ -3190,7 +3204,7 @@ public class PipelineMakerManager extends Thread {
 
 		return (MBodyTableFeatures) tableFeatures.toImmutable();
 	}
-	
+
 	public MBodyTableFeatures hpeSDNQoS() {
 
 		/*
@@ -3360,7 +3374,7 @@ public class PipelineMakerManager extends Thread {
 
 		return (MBodyTableFeatures) tableFeatures.toImmutable();
 	}
-	
+
 	public MBodyTableFeatures hpeSDNQoSOptimizer() {
 
 		/*
@@ -3514,7 +3528,7 @@ public class PipelineMakerManager extends Thread {
 
 		return (MBodyTableFeatures) tableFeatures.toImmutable();
 	}
-	
+
 	public MBodyTableFeatures hpeSDNInspectServiceTunnel() {
 
 		/*
@@ -3562,7 +3576,7 @@ public class PipelineMakerManager extends Thread {
 		 * Set the tables to which rules can be pointed to from the current
 		 * table
 		 */
-		Set<TableId> tableNextTables = new HashSet<TableId>();	
+		Set<TableId> tableNextTables = new HashSet<TableId>();
 		tableFeatures.addProp(TableFeatureFactory.createNextTablesProp(ProtocolVersion.V_1_3,
 				TableFeaturePropType.NEXT_TABLES, tableNextTables));
 
@@ -3661,7 +3675,7 @@ public class PipelineMakerManager extends Thread {
 
 		return (MBodyTableFeatures) tableFeatures.toImmutable();
 	}
-	
+
 	public void cbsGenerateFlowMod() {
 		// Set a random priority to the flow
 		int prio = 100;
