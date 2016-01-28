@@ -105,14 +105,14 @@ public class PipelineMakerManager extends Thread {
 			// tableFeatureRequestBody.addTableFeatures(createCustomMatchTableProperties());
 			// tableFeatureRequestBody.addTableFeatures(createMixedTableProperties());
 
-			tableFeatureRequestBody.addTableFeatures(hpeSDNTableTopoDiscoverARP());
-			tableFeatureRequestBody.addTableFeatures(hpeSDNTableTopoDiscoverDHCP());
-			tableFeatureRequestBody.addTableFeatures(hpeSDNTableTopoDiscoverBDDP());
-			tableFeatureRequestBody.addTableFeatures(hpeSDNVisibilityCopyTunnel());
-			tableFeatureRequestBody.addTableFeatures(hpeSDNBlacklist());
-			tableFeatureRequestBody.addTableFeatures(hpeSDNQoS());
-			tableFeatureRequestBody.addTableFeatures(hpeSDNQoSOptimizer());
-			tableFeatureRequestBody.addTableFeatures(hpeSDNInspectServiceTunnel());
+			tableFeatureRequestBody.addTableFeatures(hpeSDNTableARPBypass());
+			tableFeatureRequestBody.addTableFeatures(hpeSDNTableTopologyLearning());
+			tableFeatureRequestBody.addTableFeatures(hpeSDNTableVisibilityCopyTunnel());
+			tableFeatureRequestBody.addTableFeatures(hpeSDNTableQuarantine());
+			tableFeatureRequestBody.addTableFeatures(hpeSDNTableQoS());
+			tableFeatureRequestBody.addTableFeatures(hpeSDNTableIPSaaSFirewallOne());
+			tableFeatureRequestBody.addTableFeatures(hpeSDNTableIPSaaSFirewallTwo());
+			tableFeatureRequestBody.addTableFeatures(hpeSDNTableHybrid());
 
 			/* Create a new multipart request body */
 			MultipartBody tableFeatureMPBody = MpBodyFactory.createRequestBody(ProtocolVersion.V_1_3,
@@ -2369,7 +2369,7 @@ public class PipelineMakerManager extends Thread {
 		return (MBodyTableFeatures) tableFeatures.toImmutable();
 	}
 
-	public MBodyTableFeatures hpeSDNTableTopoDiscoverARP() {
+	public MBodyTableFeatures hpeSDNTableARPBypass() {
 
 		/*
 		 * Now let us create a Table Features Request message with a new
@@ -2383,7 +2383,7 @@ public class PipelineMakerManager extends Thread {
 		tableFeatures.tableId(tblID);
 
 		/* Set a name for the new table */
-		tableFeatures.name("Topology discovery - ARP");
+		tableFeatures.name("ARP Bypass");
 
 		/* Set the metadata match & metadata write fields for the table */
 		tableFeatures.metadataWrite(0x00);
@@ -2445,7 +2445,6 @@ public class PipelineMakerManager extends Thread {
 		/* Set the actions to be supported via WRITE instruction */
 		Set<ActionType> tableWriteActions = new HashSet<ActionType>();
 		tableWriteActions.add(ActionType.OUTPUT);
-		tableWriteActions.add(ActionType.SET_FIELD);
 		tableFeatures.addProp(TableFeatureFactory.createActionProp(ProtocolVersion.V_1_3,
 				TableFeaturePropType.WRITE_ACTIONS, tableWriteActions));
 
@@ -2455,14 +2454,12 @@ public class PipelineMakerManager extends Thread {
 		 */
 		Set<ActionType> tableWriteActionsMiss = new HashSet<ActionType>();
 		tableWriteActionsMiss.add(ActionType.OUTPUT);
-		tableWriteActionsMiss.add(ActionType.SET_FIELD);
 		tableFeatures.addProp(TableFeatureFactory.createActionProp(ProtocolVersion.V_1_3,
 				TableFeaturePropType.WRITE_ACTIONS_MISS, tableWriteActionsMiss));
 
 		/* Set the actions to be supported via APPLY instruction */
 		Set<ActionType> tableApplyActions = new HashSet<ActionType>();
 		tableApplyActions.add(ActionType.OUTPUT);
-		tableApplyActions.add(ActionType.SET_FIELD);
 		tableFeatures.addProp(TableFeatureFactory.createActionProp(ProtocolVersion.V_1_3,
 				TableFeaturePropType.APPLY_ACTIONS, tableApplyActions));
 
@@ -2472,7 +2469,6 @@ public class PipelineMakerManager extends Thread {
 		 */
 		Set<ActionType> tableApplyActionsMiss = new HashSet<ActionType>();
 		tableApplyActionsMiss.add(ActionType.OUTPUT);
-		tableApplyActionsMiss.add(ActionType.SET_FIELD);
 		tableFeatures.addProp(TableFeatureFactory.createActionProp(ProtocolVersion.V_1_3,
 				TableFeaturePropType.APPLY_ACTIONS_MISS, tableApplyActionsMiss));
 
@@ -2485,52 +2481,10 @@ public class PipelineMakerManager extends Thread {
 		tableFeatures.addProp(
 				TableFeatureFactory.createOxmProp(ProtocolVersion.V_1_3, TableFeaturePropType.MATCH, tableMatchFields));
 
-		/* Set the fields that can be modified via a WRITE instruction */
-		Map<OxmBasicFieldType, Boolean> tableWriteSetFields = new HashMap<OxmBasicFieldType, Boolean>();
-		tableWriteSetFields.put(OxmBasicFieldType.VLAN_VID, false);
-		tableWriteSetFields.put(OxmBasicFieldType.VLAN_PCP, false);
-		tableWriteSetFields.put(OxmBasicFieldType.ETH_DST, false);
-		tableWriteSetFields.put(OxmBasicFieldType.ETH_SRC, false);
-		tableFeatures.addProp(TableFeatureFactory.createOxmProp(ProtocolVersion.V_1_3,
-				TableFeaturePropType.WRITE_SETFIELD, tableWriteSetFields));
-
-		/*
-		 * Set the fields that can be modified via a WRITE instruction for a
-		 * miss rule
-		 */
-		Map<OxmBasicFieldType, Boolean> tableWriteSetFieldsMiss = new HashMap<OxmBasicFieldType, Boolean>();
-		tableWriteSetFieldsMiss.put(OxmBasicFieldType.VLAN_VID, false);
-		tableWriteSetFieldsMiss.put(OxmBasicFieldType.VLAN_PCP, false);
-		tableWriteSetFieldsMiss.put(OxmBasicFieldType.ETH_DST, false);
-		tableWriteSetFieldsMiss.put(OxmBasicFieldType.ETH_SRC, false);
-		tableFeatures.addProp(TableFeatureFactory.createOxmProp(ProtocolVersion.V_1_3,
-				TableFeaturePropType.WRITE_SETFIELD_MISS, tableWriteSetFieldsMiss));
-
-		/* Set the fields that can be modified via a APPLY instruction */
-		Map<OxmBasicFieldType, Boolean> tableApplySetFields = new HashMap<OxmBasicFieldType, Boolean>();
-		tableApplySetFields.put(OxmBasicFieldType.VLAN_VID, false);
-		tableApplySetFields.put(OxmBasicFieldType.VLAN_PCP, false);
-		tableApplySetFields.put(OxmBasicFieldType.ETH_DST, false);
-		tableApplySetFields.put(OxmBasicFieldType.ETH_SRC, false);
-		tableFeatures.addProp(TableFeatureFactory.createOxmProp(ProtocolVersion.V_1_3,
-				TableFeaturePropType.APPLY_SETFIELD, tableApplySetFields));
-
-		/*
-		 * Set the fields that can be modified via a APPLY instruction for a
-		 * miss rule
-		 */
-		Map<OxmBasicFieldType, Boolean> tableApplySetFieldsMiss = new HashMap<OxmBasicFieldType, Boolean>();
-		tableApplySetFieldsMiss.put(OxmBasicFieldType.VLAN_VID, false);
-		tableApplySetFieldsMiss.put(OxmBasicFieldType.VLAN_PCP, false);
-		tableApplySetFieldsMiss.put(OxmBasicFieldType.ETH_DST, false);
-		tableApplySetFieldsMiss.put(OxmBasicFieldType.ETH_SRC, false);
-		tableFeatures.addProp(TableFeatureFactory.createOxmProp(ProtocolVersion.V_1_3,
-				TableFeaturePropType.APPLY_SETFIELD_MISS, tableApplySetFieldsMiss));
-
 		return (MBodyTableFeatures) tableFeatures.toImmutable();
 	}
 
-	public MBodyTableFeatures hpeSDNTableTopoDiscoverDHCP() {
+	public MBodyTableFeatures hpeSDNTableTopologyLearning() {
 
 		/*
 		 * Now let us create a Table Features Request message with a new
@@ -2544,14 +2498,14 @@ public class PipelineMakerManager extends Thread {
 		tableFeatures.tableId(tblID);
 
 		/* Set a name for the new table */
-		tableFeatures.name("Topology discovery - DHCP");
+		tableFeatures.name("Topology Learning");
 
 		/* Set the metadata match & metadata write fields for the table */
 		tableFeatures.metadataWrite(0x00);
 		tableFeatures.metadataMatch(0x00);
 
 		/* Set the size of the new table */
-		tableFeatures.maxEntries(512);
+		tableFeatures.maxEntries(4);
 
 		/* Set the instructions to be supported in the new table */
 		Set<InstructionType> tableInstrTypes = new HashSet<InstructionType>();
@@ -2604,7 +2558,6 @@ public class PipelineMakerManager extends Thread {
 		/* Set the actions to be supported via WRITE instruction */
 		Set<ActionType> tableWriteActions = new HashSet<ActionType>();
 		tableWriteActions.add(ActionType.OUTPUT);
-		tableWriteActions.add(ActionType.SET_FIELD);
 		tableFeatures.addProp(TableFeatureFactory.createActionProp(ProtocolVersion.V_1_3,
 				TableFeaturePropType.WRITE_ACTIONS, tableWriteActions));
 
@@ -2614,14 +2567,12 @@ public class PipelineMakerManager extends Thread {
 		 */
 		Set<ActionType> tableWriteActionsMiss = new HashSet<ActionType>();
 		tableWriteActionsMiss.add(ActionType.OUTPUT);
-		tableWriteActionsMiss.add(ActionType.SET_FIELD);
 		tableFeatures.addProp(TableFeatureFactory.createActionProp(ProtocolVersion.V_1_3,
 				TableFeaturePropType.WRITE_ACTIONS_MISS, tableWriteActionsMiss));
 
 		/* Set the actions to be supported via APPLY instruction */
 		Set<ActionType> tableApplyActions = new HashSet<ActionType>();
 		tableApplyActions.add(ActionType.OUTPUT);
-		tableApplyActions.add(ActionType.SET_FIELD);
 		tableFeatures.addProp(TableFeatureFactory.createActionProp(ProtocolVersion.V_1_3,
 				TableFeaturePropType.APPLY_ACTIONS, tableApplyActions));
 
@@ -2631,13 +2582,13 @@ public class PipelineMakerManager extends Thread {
 		 */
 		Set<ActionType> tableApplyActionsMiss = new HashSet<ActionType>();
 		tableApplyActionsMiss.add(ActionType.OUTPUT);
-		tableApplyActionsMiss.add(ActionType.SET_FIELD);
 		tableFeatures.addProp(TableFeatureFactory.createActionProp(ProtocolVersion.V_1_3,
 				TableFeaturePropType.APPLY_ACTIONS_MISS, tableApplyActionsMiss));
 
 		/* Set the fields the table will match on */
 		Map<OxmBasicFieldType, Boolean> tableMatchFields = new HashMap<OxmBasicFieldType, Boolean>();
 		tableMatchFields.put(OxmBasicFieldType.ETH_TYPE, false);
+		tableMatchFields.put(OxmBasicFieldType.ARP_OP, false);
 		tableMatchFields.put(OxmBasicFieldType.IP_PROTO, false);
 		tableMatchFields.put(OxmBasicFieldType.UDP_SRC, false);
 		tableMatchFields.put(OxmBasicFieldType.UDP_DST, false);
@@ -2645,52 +2596,20 @@ public class PipelineMakerManager extends Thread {
 		tableFeatures.addProp(
 				TableFeatureFactory.createOxmProp(ProtocolVersion.V_1_3, TableFeaturePropType.MATCH, tableMatchFields));
 
-		/* Set the fields that can be modified via a WRITE instruction */
-		Map<OxmBasicFieldType, Boolean> tableWriteSetFields = new HashMap<OxmBasicFieldType, Boolean>();
-		tableWriteSetFields.put(OxmBasicFieldType.VLAN_VID, false);
-		tableWriteSetFields.put(OxmBasicFieldType.VLAN_PCP, false);
-		tableWriteSetFields.put(OxmBasicFieldType.ETH_DST, false);
-		tableWriteSetFields.put(OxmBasicFieldType.ETH_SRC, false);
-		tableFeatures.addProp(TableFeatureFactory.createOxmProp(ProtocolVersion.V_1_3,
-				TableFeaturePropType.WRITE_SETFIELD, tableWriteSetFields));
-
-		/*
-		 * Set the fields that can be modified via a WRITE instruction for a
-		 * miss rule
-		 */
-		Map<OxmBasicFieldType, Boolean> tableWriteSetFieldsMiss = new HashMap<OxmBasicFieldType, Boolean>();
-		tableWriteSetFieldsMiss.put(OxmBasicFieldType.VLAN_VID, false);
-		tableWriteSetFieldsMiss.put(OxmBasicFieldType.VLAN_PCP, false);
-		tableWriteSetFieldsMiss.put(OxmBasicFieldType.ETH_DST, false);
-		tableWriteSetFieldsMiss.put(OxmBasicFieldType.ETH_SRC, false);
-		tableFeatures.addProp(TableFeatureFactory.createOxmProp(ProtocolVersion.V_1_3,
-				TableFeaturePropType.WRITE_SETFIELD_MISS, tableWriteSetFieldsMiss));
-
-		/* Set the fields that can be modified via a APPLY instruction */
-		Map<OxmBasicFieldType, Boolean> tableApplySetFields = new HashMap<OxmBasicFieldType, Boolean>();
-		tableApplySetFields.put(OxmBasicFieldType.VLAN_VID, false);
-		tableApplySetFields.put(OxmBasicFieldType.VLAN_PCP, false);
-		tableApplySetFields.put(OxmBasicFieldType.ETH_DST, false);
-		tableApplySetFields.put(OxmBasicFieldType.ETH_SRC, false);
-		tableFeatures.addProp(TableFeatureFactory.createOxmProp(ProtocolVersion.V_1_3,
-				TableFeaturePropType.APPLY_SETFIELD, tableApplySetFields));
-
-		/*
-		 * Set the fields that can be modified via a APPLY instruction for a
-		 * miss rule
-		 */
-		Map<OxmBasicFieldType, Boolean> tableApplySetFieldsMiss = new HashMap<OxmBasicFieldType, Boolean>();
-		tableApplySetFieldsMiss.put(OxmBasicFieldType.VLAN_VID, false);
-		tableApplySetFieldsMiss.put(OxmBasicFieldType.VLAN_PCP, false);
-		tableApplySetFieldsMiss.put(OxmBasicFieldType.ETH_DST, false);
-		tableApplySetFieldsMiss.put(OxmBasicFieldType.ETH_SRC, false);
-		tableFeatures.addProp(TableFeatureFactory.createOxmProp(ProtocolVersion.V_1_3,
-				TableFeaturePropType.APPLY_SETFIELD_MISS, tableApplySetFieldsMiss));
+		/* Set the match fields that can be wildcarded */
+		Map<OxmBasicFieldType, Boolean> tableWildcards = new HashMap<OxmBasicFieldType, Boolean>();
+		tableWildcards.put(OxmBasicFieldType.ETH_TYPE, false);
+		tableWildcards.put(OxmBasicFieldType.ARP_OP, false);
+		tableWildcards.put(OxmBasicFieldType.IP_PROTO, false);
+		tableWildcards.put(OxmBasicFieldType.UDP_SRC, false);
+		tableWildcards.put(OxmBasicFieldType.UDP_DST, false);
+		tableFeatures.addProp(TableFeatureFactory.createOxmProp(ProtocolVersion.V_1_3, TableFeaturePropType.WILDCARDS,
+				tableWildcards));
 
 		return (MBodyTableFeatures) tableFeatures.toImmutable();
 	}
 
-	public MBodyTableFeatures hpeSDNTableTopoDiscoverBDDP() {
+	public MBodyTableFeatures hpeSDNTableVisibilityCopyTunnel() {
 
 		/*
 		 * Now let us create a Table Features Request message with a new
@@ -2704,14 +2623,14 @@ public class PipelineMakerManager extends Thread {
 		tableFeatures.tableId(tblID);
 
 		/* Set a name for the new table */
-		tableFeatures.name("Topology discovery - BDDP");
+		tableFeatures.name("Visibility Table");
 
 		/* Set the metadata match & metadata write fields for the table */
 		tableFeatures.metadataWrite(0x00);
 		tableFeatures.metadataMatch(0x00);
 
 		/* Set the size of the new table */
-		tableFeatures.maxEntries(512);
+		tableFeatures.maxEntries(1024);
 
 		/* Set the instructions to be supported in the new table */
 		Set<InstructionType> tableInstrTypes = new HashSet<InstructionType>();
@@ -2762,7 +2681,6 @@ public class PipelineMakerManager extends Thread {
 		/* Set the actions to be supported via WRITE instruction */
 		Set<ActionType> tableWriteActions = new HashSet<ActionType>();
 		tableWriteActions.add(ActionType.OUTPUT);
-		tableWriteActions.add(ActionType.SET_FIELD);
 		tableFeatures.addProp(TableFeatureFactory.createActionProp(ProtocolVersion.V_1_3,
 				TableFeaturePropType.WRITE_ACTIONS, tableWriteActions));
 
@@ -2772,14 +2690,12 @@ public class PipelineMakerManager extends Thread {
 		 */
 		Set<ActionType> tableWriteActionsMiss = new HashSet<ActionType>();
 		tableWriteActionsMiss.add(ActionType.OUTPUT);
-		tableWriteActionsMiss.add(ActionType.SET_FIELD);
 		tableFeatures.addProp(TableFeatureFactory.createActionProp(ProtocolVersion.V_1_3,
 				TableFeaturePropType.WRITE_ACTIONS_MISS, tableWriteActionsMiss));
 
 		/* Set the actions to be supported via APPLY instruction */
 		Set<ActionType> tableApplyActions = new HashSet<ActionType>();
 		tableApplyActions.add(ActionType.OUTPUT);
-		tableApplyActions.add(ActionType.SET_FIELD);
 		tableFeatures.addProp(TableFeatureFactory.createActionProp(ProtocolVersion.V_1_3,
 				TableFeaturePropType.APPLY_ACTIONS, tableApplyActions));
 
@@ -2789,63 +2705,52 @@ public class PipelineMakerManager extends Thread {
 		 */
 		Set<ActionType> tableApplyActionsMiss = new HashSet<ActionType>();
 		tableApplyActionsMiss.add(ActionType.OUTPUT);
-		tableApplyActionsMiss.add(ActionType.SET_FIELD);
 		tableFeatures.addProp(TableFeatureFactory.createActionProp(ProtocolVersion.V_1_3,
 				TableFeaturePropType.APPLY_ACTIONS_MISS, tableApplyActionsMiss));
 
+		List<MFieldExperimenter> tableExpMatchFields = new ArrayList<MFieldExperimenter>();
+		byte[] ipAddr = new byte[] { 0x00, 0x02, 0x00, 0x0C, 0x00, 0x08 };
+		byte[] grePayload = new byte[] { 0x00, 0x03, 0x00, 0x02, 0x00, 0x02 };
+
+		MFieldExperimenter expMatchIPAddr = com.hp.of.lib.match.FieldFactory
+				.createExperimenterField(ProtocolVersion.V_1_3, 5, 9345, ipAddr);
+		MFieldExperimenter expMatchGREPayload = com.hp.of.lib.match.FieldFactory
+				.createExperimenterField(ProtocolVersion.V_1_3, 6, 9345, grePayload);
+
+		tableExpMatchFields.add(expMatchIPAddr);
+		tableExpMatchFields.add(expMatchGREPayload);
+
 		/* Set the fields the table will match on */
 		Map<OxmBasicFieldType, Boolean> tableMatchFields = new HashMap<OxmBasicFieldType, Boolean>();
+		tableMatchFields.put(OxmBasicFieldType.IN_PORT, false);
 		tableMatchFields.put(OxmBasicFieldType.ETH_TYPE, false);
+		tableMatchFields.put(OxmBasicFieldType.VLAN_VID, false);
+		tableMatchFields.put(OxmBasicFieldType.IP_PROTO, false);
+		tableFeatures.addProp(TableFeatureFactory.createOxmProp(ProtocolVersion.V_1_3, TableFeaturePropType.MATCH,
+				tableMatchFields, tableExpMatchFields));
 
-		tableFeatures.addProp(
-				TableFeatureFactory.createOxmProp(ProtocolVersion.V_1_3, TableFeaturePropType.MATCH, tableMatchFields));
+		List<MFieldExperimenter> tableExpWildcards = new ArrayList<MFieldExperimenter>();
+		MFieldExperimenter expWildcardIPAddr = com.hp.of.lib.match.FieldFactory
+				.createExperimenterField(ProtocolVersion.V_1_3, 5, 9345, null);
+		MFieldExperimenter expWildcardGREPayload = com.hp.of.lib.match.FieldFactory
+				.createExperimenterField(ProtocolVersion.V_1_3, 6, 9345, null);
 
-		/* Set the fields that can be modified via a WRITE instruction */
-		Map<OxmBasicFieldType, Boolean> tableWriteSetFields = new HashMap<OxmBasicFieldType, Boolean>();
-		tableWriteSetFields.put(OxmBasicFieldType.VLAN_VID, false);
-		tableWriteSetFields.put(OxmBasicFieldType.VLAN_PCP, false);
-		tableWriteSetFields.put(OxmBasicFieldType.ETH_DST, false);
-		tableWriteSetFields.put(OxmBasicFieldType.ETH_SRC, false);
-		tableFeatures.addProp(TableFeatureFactory.createOxmProp(ProtocolVersion.V_1_3,
-				TableFeaturePropType.WRITE_SETFIELD, tableWriteSetFields));
+		tableExpWildcards.add(expWildcardIPAddr);
+		tableExpWildcards.add(expWildcardGREPayload);
 
-		/*
-		 * Set the fields that can be modified via a WRITE instruction for a
-		 * miss rule
-		 */
-		Map<OxmBasicFieldType, Boolean> tableWriteSetFieldsMiss = new HashMap<OxmBasicFieldType, Boolean>();
-		tableWriteSetFieldsMiss.put(OxmBasicFieldType.VLAN_VID, false);
-		tableWriteSetFieldsMiss.put(OxmBasicFieldType.VLAN_PCP, false);
-		tableWriteSetFieldsMiss.put(OxmBasicFieldType.ETH_DST, false);
-		tableWriteSetFieldsMiss.put(OxmBasicFieldType.ETH_SRC, false);
-		tableFeatures.addProp(TableFeatureFactory.createOxmProp(ProtocolVersion.V_1_3,
-				TableFeaturePropType.WRITE_SETFIELD_MISS, tableWriteSetFieldsMiss));
-
-		/* Set the fields that can be modified via a APPLY instruction */
-		Map<OxmBasicFieldType, Boolean> tableApplySetFields = new HashMap<OxmBasicFieldType, Boolean>();
-		tableApplySetFields.put(OxmBasicFieldType.VLAN_VID, false);
-		tableApplySetFields.put(OxmBasicFieldType.VLAN_PCP, false);
-		tableApplySetFields.put(OxmBasicFieldType.ETH_DST, false);
-		tableApplySetFields.put(OxmBasicFieldType.ETH_SRC, false);
-		tableFeatures.addProp(TableFeatureFactory.createOxmProp(ProtocolVersion.V_1_3,
-				TableFeaturePropType.APPLY_SETFIELD, tableApplySetFields));
-
-		/*
-		 * Set the fields that can be modified via a APPLY instruction for a
-		 * miss rule
-		 */
-		Map<OxmBasicFieldType, Boolean> tableApplySetFieldsMiss = new HashMap<OxmBasicFieldType, Boolean>();
-		tableApplySetFieldsMiss.put(OxmBasicFieldType.VLAN_VID, false);
-		tableApplySetFieldsMiss.put(OxmBasicFieldType.VLAN_PCP, false);
-		tableApplySetFieldsMiss.put(OxmBasicFieldType.ETH_DST, false);
-		tableApplySetFieldsMiss.put(OxmBasicFieldType.ETH_SRC, false);
-		tableFeatures.addProp(TableFeatureFactory.createOxmProp(ProtocolVersion.V_1_3,
-				TableFeaturePropType.APPLY_SETFIELD_MISS, tableApplySetFieldsMiss));
+		/* Set the match fields that can be wildcarded */
+		Map<OxmBasicFieldType, Boolean> tableWildcards = new HashMap<OxmBasicFieldType, Boolean>();
+		tableWildcards.put(OxmBasicFieldType.IN_PORT, false);
+		tableWildcards.put(OxmBasicFieldType.ETH_TYPE, false);
+		tableWildcards.put(OxmBasicFieldType.VLAN_VID, false);
+		tableWildcards.put(OxmBasicFieldType.IP_PROTO, false);
+		tableFeatures.addProp(TableFeatureFactory.createOxmProp(ProtocolVersion.V_1_3, TableFeaturePropType.WILDCARDS,
+				tableWildcards, tableExpWildcards));
 
 		return (MBodyTableFeatures) tableFeatures.toImmutable();
 	}
 
-	public MBodyTableFeatures hpeSDNVisibilityCopyTunnel() {
+	public MBodyTableFeatures hpeSDNTableQuarantine() {
 
 		/*
 		 * Now let us create a Table Features Request message with a new
@@ -2859,14 +2764,14 @@ public class PipelineMakerManager extends Thread {
 		tableFeatures.tableId(tblID);
 
 		/* Set a name for the new table */
-		tableFeatures.name("Visibility Copy Tunnel");
+		tableFeatures.name("Quarantine");
 
 		/* Set the metadata match & metadata write fields for the table */
 		tableFeatures.metadataWrite(0x00);
 		tableFeatures.metadataMatch(0x00);
 
 		/* Set the size of the new table */
-		tableFeatures.maxEntries(128);
+		tableFeatures.maxEntries(500);
 
 		/* Set the instructions to be supported in the new table */
 		Set<InstructionType> tableInstrTypes = new HashSet<InstructionType>();
@@ -2915,7 +2820,6 @@ public class PipelineMakerManager extends Thread {
 		/* Set the actions to be supported via WRITE instruction */
 		Set<ActionType> tableWriteActions = new HashSet<ActionType>();
 		tableWriteActions.add(ActionType.OUTPUT);
-		tableWriteActions.add(ActionType.SET_FIELD);
 		tableFeatures.addProp(TableFeatureFactory.createActionProp(ProtocolVersion.V_1_3,
 				TableFeaturePropType.WRITE_ACTIONS, tableWriteActions));
 
@@ -2925,14 +2829,12 @@ public class PipelineMakerManager extends Thread {
 		 */
 		Set<ActionType> tableWriteActionsMiss = new HashSet<ActionType>();
 		tableWriteActionsMiss.add(ActionType.OUTPUT);
-		tableWriteActionsMiss.add(ActionType.SET_FIELD);
 		tableFeatures.addProp(TableFeatureFactory.createActionProp(ProtocolVersion.V_1_3,
 				TableFeaturePropType.WRITE_ACTIONS_MISS, tableWriteActionsMiss));
 
 		/* Set the actions to be supported via APPLY instruction */
 		Set<ActionType> tableApplyActions = new HashSet<ActionType>();
 		tableApplyActions.add(ActionType.OUTPUT);
-		tableApplyActions.add(ActionType.SET_FIELD);
 		tableFeatures.addProp(TableFeatureFactory.createActionProp(ProtocolVersion.V_1_3,
 				TableFeaturePropType.APPLY_ACTIONS, tableApplyActions));
 
@@ -2942,100 +2844,33 @@ public class PipelineMakerManager extends Thread {
 		 */
 		Set<ActionType> tableApplyActionsMiss = new HashSet<ActionType>();
 		tableApplyActionsMiss.add(ActionType.OUTPUT);
-		tableApplyActionsMiss.add(ActionType.SET_FIELD);
 		tableFeatures.addProp(TableFeatureFactory.createActionProp(ProtocolVersion.V_1_3,
 				TableFeaturePropType.APPLY_ACTIONS_MISS, tableApplyActionsMiss));
 
-		List<MFieldExperimenter> tableExpMatchFields = new ArrayList<MFieldExperimenter>();
-		byte[] grePayload = new byte[] { 0x00, 0x03, 0x00, 0x02, 0x00, 0x02 };
-
-		MFieldExperimenter expMatchGREPayload = com.hp.of.lib.match.FieldFactory
-				.createExperimenterField(ProtocolVersion.V_1_3, 5, 9345, grePayload);
-
-		tableExpMatchFields.add(expMatchGREPayload);
-
 		/* Set the fields the table will match on */
 		Map<OxmBasicFieldType, Boolean> tableMatchFields = new HashMap<OxmBasicFieldType, Boolean>();
-		tableMatchFields.put(OxmBasicFieldType.IN_PORT, false);
-		tableMatchFields.put(OxmBasicFieldType.ETH_DST, false);
-		tableMatchFields.put(OxmBasicFieldType.ETH_SRC, false);
 		tableMatchFields.put(OxmBasicFieldType.ETH_TYPE, false);
 		tableMatchFields.put(OxmBasicFieldType.VLAN_VID, false);
 		tableMatchFields.put(OxmBasicFieldType.IP_PROTO, false);
-		tableMatchFields.put(OxmBasicFieldType.TCP_SRC, false);
-		tableMatchFields.put(OxmBasicFieldType.TCP_DST, false);
-		tableMatchFields.put(OxmBasicFieldType.UDP_SRC, false);
+		tableMatchFields.put(OxmBasicFieldType.IPV4_SRC, false);
 		tableMatchFields.put(OxmBasicFieldType.UDP_DST, false);
-		tableFeatures.addProp(TableFeatureFactory.createOxmProp(ProtocolVersion.V_1_3, TableFeaturePropType.MATCH,
-				tableMatchFields, tableExpMatchFields));
-
-		List<MFieldExperimenter> tableExpWildcards = new ArrayList<MFieldExperimenter>();
-		MFieldExperimenter expWildcardGREPayload = com.hp.of.lib.match.FieldFactory
-				.createExperimenterField(ProtocolVersion.V_1_3, 5, 9345, null);
-
-		tableExpWildcards.add(expWildcardGREPayload);
+		tableFeatures.addProp(
+				TableFeatureFactory.createOxmProp(ProtocolVersion.V_1_3, TableFeaturePropType.MATCH, tableMatchFields));
 
 		/* Set the match fields that can be wildcarded */
 		Map<OxmBasicFieldType, Boolean> tableWildcards = new HashMap<OxmBasicFieldType, Boolean>();
-		tableWildcards.put(OxmBasicFieldType.IN_PORT, false);
-		tableWildcards.put(OxmBasicFieldType.ETH_DST, false);
-		tableWildcards.put(OxmBasicFieldType.ETH_SRC, false);
 		tableWildcards.put(OxmBasicFieldType.ETH_TYPE, false);
 		tableWildcards.put(OxmBasicFieldType.VLAN_VID, false);
 		tableWildcards.put(OxmBasicFieldType.IP_PROTO, false);
-		tableWildcards.put(OxmBasicFieldType.TCP_SRC, false);
-		tableWildcards.put(OxmBasicFieldType.TCP_DST, false);
-		tableWildcards.put(OxmBasicFieldType.UDP_SRC, false);
+		tableWildcards.put(OxmBasicFieldType.IPV4_SRC, false);
 		tableWildcards.put(OxmBasicFieldType.UDP_DST, false);
 		tableFeatures.addProp(TableFeatureFactory.createOxmProp(ProtocolVersion.V_1_3, TableFeaturePropType.WILDCARDS,
-				tableWildcards, tableExpWildcards));
-
-		/* Set the fields that can be modified via a WRITE instruction */
-		Map<OxmBasicFieldType, Boolean> tableWriteSetFields = new HashMap<OxmBasicFieldType, Boolean>();
-		tableWriteSetFields.put(OxmBasicFieldType.VLAN_VID, false);
-		tableWriteSetFields.put(OxmBasicFieldType.VLAN_PCP, false);
-		tableWriteSetFields.put(OxmBasicFieldType.ETH_DST, false);
-		tableWriteSetFields.put(OxmBasicFieldType.ETH_SRC, false);
-		tableFeatures.addProp(TableFeatureFactory.createOxmProp(ProtocolVersion.V_1_3,
-				TableFeaturePropType.WRITE_SETFIELD, tableWriteSetFields));
-
-		/*
-		 * Set the fields that can be modified via a WRITE instruction for a
-		 * miss rule
-		 */
-		Map<OxmBasicFieldType, Boolean> tableWriteSetFieldsMiss = new HashMap<OxmBasicFieldType, Boolean>();
-		tableWriteSetFieldsMiss.put(OxmBasicFieldType.VLAN_VID, false);
-		tableWriteSetFieldsMiss.put(OxmBasicFieldType.VLAN_PCP, false);
-		tableWriteSetFieldsMiss.put(OxmBasicFieldType.ETH_DST, false);
-		tableWriteSetFieldsMiss.put(OxmBasicFieldType.ETH_SRC, false);
-		tableFeatures.addProp(TableFeatureFactory.createOxmProp(ProtocolVersion.V_1_3,
-				TableFeaturePropType.WRITE_SETFIELD_MISS, tableWriteSetFieldsMiss));
-
-		/* Set the fields that can be modified via a APPLY instruction */
-		Map<OxmBasicFieldType, Boolean> tableApplySetFields = new HashMap<OxmBasicFieldType, Boolean>();
-		tableApplySetFields.put(OxmBasicFieldType.VLAN_VID, false);
-		tableApplySetFields.put(OxmBasicFieldType.VLAN_PCP, false);
-		tableApplySetFields.put(OxmBasicFieldType.ETH_DST, false);
-		tableApplySetFields.put(OxmBasicFieldType.ETH_SRC, false);
-		tableFeatures.addProp(TableFeatureFactory.createOxmProp(ProtocolVersion.V_1_3,
-				TableFeaturePropType.APPLY_SETFIELD, tableApplySetFields));
-
-		/*
-		 * Set the fields that can be modified via a APPLY instruction for a
-		 * miss rule
-		 */
-		Map<OxmBasicFieldType, Boolean> tableApplySetFieldsMiss = new HashMap<OxmBasicFieldType, Boolean>();
-		tableApplySetFieldsMiss.put(OxmBasicFieldType.VLAN_VID, false);
-		tableApplySetFieldsMiss.put(OxmBasicFieldType.VLAN_PCP, false);
-		tableApplySetFieldsMiss.put(OxmBasicFieldType.ETH_DST, false);
-		tableApplySetFieldsMiss.put(OxmBasicFieldType.ETH_SRC, false);
-		tableFeatures.addProp(TableFeatureFactory.createOxmProp(ProtocolVersion.V_1_3,
-				TableFeaturePropType.APPLY_SETFIELD_MISS, tableApplySetFieldsMiss));
+				tableWildcards));
 
 		return (MBodyTableFeatures) tableFeatures.toImmutable();
 	}
 
-	public MBodyTableFeatures hpeSDNBlacklist() {
+	public MBodyTableFeatures hpeSDNTableQoS() {
 
 		/*
 		 * Now let us create a Table Features Request message with a new
@@ -3049,14 +2884,14 @@ public class PipelineMakerManager extends Thread {
 		tableFeatures.tableId(tblID);
 
 		/* Set a name for the new table */
-		tableFeatures.name("Blacklist");
+		tableFeatures.name("QoS");
 
 		/* Set the metadata match & metadata write fields for the table */
 		tableFeatures.metadataWrite(0x00);
 		tableFeatures.metadataMatch(0x00);
 
 		/* Set the size of the new table */
-		tableFeatures.maxEntries(128);
+		tableFeatures.maxEntries(500);
 
 		/* Set the instructions to be supported in the new table */
 		Set<InstructionType> tableInstrTypes = new HashSet<InstructionType>();
@@ -3095,174 +2930,6 @@ public class PipelineMakerManager extends Thread {
 		 */
 		Set<TableId> tableNextTablesMiss = new HashSet<TableId>();
 		tableNextTablesMiss.add(TableId.valueOf(5));
-		tableNextTablesMiss.add(TableId.valueOf(6));
-		tableNextTablesMiss.add(TableId.valueOf(7));
-		tableFeatures.addProp(TableFeatureFactory.createNextTablesProp(ProtocolVersion.V_1_3,
-				TableFeaturePropType.NEXT_TABLES_MISS, tableNextTablesMiss));
-
-		/* Set the actions to be supported via WRITE instruction */
-		Set<ActionType> tableWriteActions = new HashSet<ActionType>();
-		tableWriteActions.add(ActionType.OUTPUT);
-		tableWriteActions.add(ActionType.SET_FIELD);
-		tableFeatures.addProp(TableFeatureFactory.createActionProp(ProtocolVersion.V_1_3,
-				TableFeaturePropType.WRITE_ACTIONS, tableWriteActions));
-
-		/*
-		 * Set the actions to be supported via WRITE instruction for a table
-		 * miss rule
-		 */
-		Set<ActionType> tableWriteActionsMiss = new HashSet<ActionType>();
-		tableWriteActionsMiss.add(ActionType.OUTPUT);
-		tableWriteActionsMiss.add(ActionType.SET_FIELD);
-		tableFeatures.addProp(TableFeatureFactory.createActionProp(ProtocolVersion.V_1_3,
-				TableFeaturePropType.WRITE_ACTIONS_MISS, tableWriteActionsMiss));
-
-		/* Set the actions to be supported via APPLY instruction */
-		Set<ActionType> tableApplyActions = new HashSet<ActionType>();
-		tableApplyActions.add(ActionType.OUTPUT);
-		tableApplyActions.add(ActionType.SET_FIELD);
-		tableFeatures.addProp(TableFeatureFactory.createActionProp(ProtocolVersion.V_1_3,
-				TableFeaturePropType.APPLY_ACTIONS, tableApplyActions));
-
-		/*
-		 * Set the actions to be supported via APPLY instruction for a table
-		 * miss rule
-		 */
-		Set<ActionType> tableApplyActionsMiss = new HashSet<ActionType>();
-		tableApplyActionsMiss.add(ActionType.OUTPUT);
-		tableApplyActionsMiss.add(ActionType.SET_FIELD);
-		tableFeatures.addProp(TableFeatureFactory.createActionProp(ProtocolVersion.V_1_3,
-				TableFeaturePropType.APPLY_ACTIONS_MISS, tableApplyActionsMiss));
-
-		/* Set the fields the table will match on */
-		Map<OxmBasicFieldType, Boolean> tableMatchFields = new HashMap<OxmBasicFieldType, Boolean>();
-		tableMatchFields.put(OxmBasicFieldType.ETH_TYPE, false);
-		tableMatchFields.put(OxmBasicFieldType.VLAN_VID, false);
-		tableMatchFields.put(OxmBasicFieldType.IP_PROTO, false);
-		tableMatchFields.put(OxmBasicFieldType.IPV4_SRC, false);
-		tableMatchFields.put(OxmBasicFieldType.TCP_SRC, false);
-		tableMatchFields.put(OxmBasicFieldType.TCP_DST, false);
-		tableMatchFields.put(OxmBasicFieldType.UDP_SRC, false);
-		tableMatchFields.put(OxmBasicFieldType.UDP_DST, false);
-		tableFeatures.addProp(
-				TableFeatureFactory.createOxmProp(ProtocolVersion.V_1_3, TableFeaturePropType.MATCH, tableMatchFields));
-
-		/* Set the match fields that can be wildcarded */
-		Map<OxmBasicFieldType, Boolean> tableWildcards = new HashMap<OxmBasicFieldType, Boolean>();
-		tableWildcards.put(OxmBasicFieldType.ETH_TYPE, false);
-		tableWildcards.put(OxmBasicFieldType.VLAN_VID, false);
-		tableWildcards.put(OxmBasicFieldType.IP_PROTO, false);
-		tableWildcards.put(OxmBasicFieldType.IPV4_SRC, false);
-		tableWildcards.put(OxmBasicFieldType.TCP_SRC, false);
-		tableWildcards.put(OxmBasicFieldType.TCP_DST, false);
-		tableWildcards.put(OxmBasicFieldType.UDP_SRC, false);
-		tableWildcards.put(OxmBasicFieldType.UDP_DST, false);
-		tableFeatures.addProp(TableFeatureFactory.createOxmProp(ProtocolVersion.V_1_3, TableFeaturePropType.WILDCARDS,
-				tableWildcards));
-
-		/* Set the fields that can be modified via a WRITE instruction */
-		Map<OxmBasicFieldType, Boolean> tableWriteSetFields = new HashMap<OxmBasicFieldType, Boolean>();
-		tableWriteSetFields.put(OxmBasicFieldType.VLAN_VID, false);
-		tableWriteSetFields.put(OxmBasicFieldType.VLAN_PCP, false);
-		tableWriteSetFields.put(OxmBasicFieldType.ETH_DST, false);
-		tableWriteSetFields.put(OxmBasicFieldType.ETH_SRC, false);
-		tableFeatures.addProp(TableFeatureFactory.createOxmProp(ProtocolVersion.V_1_3,
-				TableFeaturePropType.WRITE_SETFIELD, tableWriteSetFields));
-
-		/*
-		 * Set the fields that can be modified via a WRITE instruction for a
-		 * miss rule
-		 */
-		Map<OxmBasicFieldType, Boolean> tableWriteSetFieldsMiss = new HashMap<OxmBasicFieldType, Boolean>();
-		tableWriteSetFieldsMiss.put(OxmBasicFieldType.VLAN_VID, false);
-		tableWriteSetFieldsMiss.put(OxmBasicFieldType.VLAN_PCP, false);
-		tableWriteSetFieldsMiss.put(OxmBasicFieldType.ETH_DST, false);
-		tableWriteSetFieldsMiss.put(OxmBasicFieldType.ETH_SRC, false);
-		tableFeatures.addProp(TableFeatureFactory.createOxmProp(ProtocolVersion.V_1_3,
-				TableFeaturePropType.WRITE_SETFIELD_MISS, tableWriteSetFieldsMiss));
-
-		/* Set the fields that can be modified via a APPLY instruction */
-		Map<OxmBasicFieldType, Boolean> tableApplySetFields = new HashMap<OxmBasicFieldType, Boolean>();
-		tableApplySetFields.put(OxmBasicFieldType.VLAN_VID, false);
-		tableApplySetFields.put(OxmBasicFieldType.VLAN_PCP, false);
-		tableApplySetFields.put(OxmBasicFieldType.ETH_DST, false);
-		tableApplySetFields.put(OxmBasicFieldType.ETH_SRC, false);
-		tableFeatures.addProp(TableFeatureFactory.createOxmProp(ProtocolVersion.V_1_3,
-				TableFeaturePropType.APPLY_SETFIELD, tableApplySetFields));
-
-		/*
-		 * Set the fields that can be modified via a APPLY instruction for a
-		 * miss rule
-		 */
-		Map<OxmBasicFieldType, Boolean> tableApplySetFieldsMiss = new HashMap<OxmBasicFieldType, Boolean>();
-		tableApplySetFieldsMiss.put(OxmBasicFieldType.VLAN_VID, false);
-		tableApplySetFieldsMiss.put(OxmBasicFieldType.VLAN_PCP, false);
-		tableApplySetFieldsMiss.put(OxmBasicFieldType.ETH_DST, false);
-		tableApplySetFieldsMiss.put(OxmBasicFieldType.ETH_SRC, false);
-		tableFeatures.addProp(TableFeatureFactory.createOxmProp(ProtocolVersion.V_1_3,
-				TableFeaturePropType.APPLY_SETFIELD_MISS, tableApplySetFieldsMiss));
-
-		return (MBodyTableFeatures) tableFeatures.toImmutable();
-	}
-
-	public MBodyTableFeatures hpeSDNQoS() {
-
-		/*
-		 * Now let us create a Table Features Request message with a new
-		 * pipeline and send it to the switch
-		 */
-
-		MBodyMutableTableFeatures tableFeatures = new MBodyMutableTableFeatures(ProtocolVersion.V_1_3);
-
-		/* Set the table ID for the new table */
-		TableId tblID = TableId.valueOf(5);
-		tableFeatures.tableId(tblID);
-
-		/* Set a name for the new table */
-		tableFeatures.name("QoS");
-
-		/* Set the metadata match & metadata write fields for the table */
-		tableFeatures.metadataWrite(0x00);
-		tableFeatures.metadataMatch(0x00);
-
-		/* Set the size of the new table */
-		tableFeatures.maxEntries(128);
-
-		/* Set the instructions to be supported in the new table */
-		Set<InstructionType> tableInstrTypes = new HashSet<InstructionType>();
-		tableInstrTypes.add(InstructionType.APPLY_ACTIONS);
-		tableInstrTypes.add(InstructionType.WRITE_ACTIONS);
-		tableInstrTypes.add(InstructionType.GOTO_TABLE);
-		tableInstrTypes.add(InstructionType.METER);
-
-		tableFeatures.addProp(TableFeatureFactory.createInstrProp(ProtocolVersion.V_1_3,
-				TableFeaturePropType.INSTRUCTIONS, tableInstrTypes));
-
-		/* Set the instructions to be supported for the table miss rule */
-		Set<InstructionType> tableInstrMissTypes = new HashSet<InstructionType>();
-		tableInstrMissTypes.add(InstructionType.APPLY_ACTIONS);
-		tableInstrMissTypes.add(InstructionType.WRITE_ACTIONS);
-		tableInstrMissTypes.add(InstructionType.GOTO_TABLE);
-		tableInstrMissTypes.add(InstructionType.METER);
-
-		tableFeatures.addProp(TableFeatureFactory.createInstrProp(ProtocolVersion.V_1_3,
-				TableFeaturePropType.INSTRUCTIONS_MISS, tableInstrMissTypes));
-
-		/*
-		 * Set the tables to which rules can be pointed to from the current
-		 * table
-		 */
-		Set<TableId> tableNextTables = new HashSet<TableId>();
-		tableNextTables.add(TableId.valueOf(6));
-		tableNextTables.add(TableId.valueOf(7));
-		tableFeatures.addProp(TableFeatureFactory.createNextTablesProp(ProtocolVersion.V_1_3,
-				TableFeaturePropType.NEXT_TABLES, tableNextTables));
-
-		/*
-		 * Set the tables to which the table miss rule can be point to from the
-		 * current table
-		 */
-		Set<TableId> tableNextTablesMiss = new HashSet<TableId>();
 		tableNextTablesMiss.add(TableId.valueOf(6));
 		tableNextTablesMiss.add(TableId.valueOf(7));
 		tableFeatures.addProp(TableFeatureFactory.createNextTablesProp(ProtocolVersion.V_1_3,
@@ -3332,10 +2999,8 @@ public class PipelineMakerManager extends Thread {
 
 		/* Set the fields that can be modified via a WRITE instruction */
 		Map<OxmBasicFieldType, Boolean> tableWriteSetFields = new HashMap<OxmBasicFieldType, Boolean>();
-		tableWriteSetFields.put(OxmBasicFieldType.VLAN_VID, false);
 		tableWriteSetFields.put(OxmBasicFieldType.VLAN_PCP, false);
-		tableWriteSetFields.put(OxmBasicFieldType.ETH_DST, false);
-		tableWriteSetFields.put(OxmBasicFieldType.ETH_SRC, false);
+		tableWriteSetFields.put(OxmBasicFieldType.IP_DSCP, false);
 		tableFeatures.addProp(TableFeatureFactory.createOxmProp(ProtocolVersion.V_1_3,
 				TableFeaturePropType.WRITE_SETFIELD, tableWriteSetFields));
 
@@ -3344,19 +3009,15 @@ public class PipelineMakerManager extends Thread {
 		 * miss rule
 		 */
 		Map<OxmBasicFieldType, Boolean> tableWriteSetFieldsMiss = new HashMap<OxmBasicFieldType, Boolean>();
-		tableWriteSetFieldsMiss.put(OxmBasicFieldType.VLAN_VID, false);
 		tableWriteSetFieldsMiss.put(OxmBasicFieldType.VLAN_PCP, false);
-		tableWriteSetFieldsMiss.put(OxmBasicFieldType.ETH_DST, false);
-		tableWriteSetFieldsMiss.put(OxmBasicFieldType.ETH_SRC, false);
+		tableWriteSetFieldsMiss.put(OxmBasicFieldType.IP_DSCP, false);
 		tableFeatures.addProp(TableFeatureFactory.createOxmProp(ProtocolVersion.V_1_3,
 				TableFeaturePropType.WRITE_SETFIELD_MISS, tableWriteSetFieldsMiss));
 
 		/* Set the fields that can be modified via a APPLY instruction */
 		Map<OxmBasicFieldType, Boolean> tableApplySetFields = new HashMap<OxmBasicFieldType, Boolean>();
-		tableApplySetFields.put(OxmBasicFieldType.VLAN_VID, false);
 		tableApplySetFields.put(OxmBasicFieldType.VLAN_PCP, false);
-		tableApplySetFields.put(OxmBasicFieldType.ETH_DST, false);
-		tableApplySetFields.put(OxmBasicFieldType.ETH_SRC, false);
+		tableApplySetFields.put(OxmBasicFieldType.IP_DSCP, false);
 		tableFeatures.addProp(TableFeatureFactory.createOxmProp(ProtocolVersion.V_1_3,
 				TableFeaturePropType.APPLY_SETFIELD, tableApplySetFields));
 
@@ -3365,17 +3026,119 @@ public class PipelineMakerManager extends Thread {
 		 * miss rule
 		 */
 		Map<OxmBasicFieldType, Boolean> tableApplySetFieldsMiss = new HashMap<OxmBasicFieldType, Boolean>();
-		tableApplySetFieldsMiss.put(OxmBasicFieldType.VLAN_VID, false);
 		tableApplySetFieldsMiss.put(OxmBasicFieldType.VLAN_PCP, false);
-		tableApplySetFieldsMiss.put(OxmBasicFieldType.ETH_DST, false);
-		tableApplySetFieldsMiss.put(OxmBasicFieldType.ETH_SRC, false);
+		tableApplySetFieldsMiss.put(OxmBasicFieldType.IP_DSCP, false);
 		tableFeatures.addProp(TableFeatureFactory.createOxmProp(ProtocolVersion.V_1_3,
 				TableFeaturePropType.APPLY_SETFIELD_MISS, tableApplySetFieldsMiss));
 
 		return (MBodyTableFeatures) tableFeatures.toImmutable();
 	}
 
-	public MBodyTableFeatures hpeSDNQoSOptimizer() {
+	public MBodyTableFeatures hpeSDNTableIPSaaSFirewallOne() {
+
+		/*
+		 * Now let us create a Table Features Request message with a new
+		 * pipeline and send it to the switch
+		 */
+
+		MBodyMutableTableFeatures tableFeatures = new MBodyMutableTableFeatures(ProtocolVersion.V_1_3);
+
+		/* Set the table ID for the new table */
+		TableId tblID = TableId.valueOf(5);
+		tableFeatures.tableId(tblID);
+
+		/* Set a name for the new table */
+		tableFeatures.name("IPSaaS/Firewall - A");
+
+		/* Set the metadata match & metadata write fields for the table */
+		tableFeatures.metadataWrite(0x00);
+		tableFeatures.metadataMatch(0x00);
+
+		/* Set the size of the new table */
+		tableFeatures.maxEntries(4096);
+
+		/* Set the instructions to be supported in the new table */
+		Set<InstructionType> tableInstrTypes = new HashSet<InstructionType>();
+		tableInstrTypes.add(InstructionType.APPLY_ACTIONS);
+		tableInstrTypes.add(InstructionType.WRITE_ACTIONS);
+		tableInstrTypes.add(InstructionType.GOTO_TABLE);
+		tableInstrTypes.add(InstructionType.METER);
+
+		tableFeatures.addProp(TableFeatureFactory.createInstrProp(ProtocolVersion.V_1_3,
+				TableFeaturePropType.INSTRUCTIONS, tableInstrTypes));
+
+		/* Set the instructions to be supported for the table miss rule */
+		Set<InstructionType> tableInstrMissTypes = new HashSet<InstructionType>();
+		tableInstrMissTypes.add(InstructionType.APPLY_ACTIONS);
+		tableInstrMissTypes.add(InstructionType.WRITE_ACTIONS);
+		tableInstrMissTypes.add(InstructionType.GOTO_TABLE);
+		tableInstrMissTypes.add(InstructionType.METER);
+
+		tableFeatures.addProp(TableFeatureFactory.createInstrProp(ProtocolVersion.V_1_3,
+				TableFeaturePropType.INSTRUCTIONS_MISS, tableInstrMissTypes));
+
+		/*
+		 * Set the tables to which rules can be pointed to from the current
+		 * table
+		 */
+		Set<TableId> tableNextTables = new HashSet<TableId>();
+		tableNextTables.add(TableId.valueOf(6));
+		tableNextTables.add(TableId.valueOf(7));
+		tableFeatures.addProp(TableFeatureFactory.createNextTablesProp(ProtocolVersion.V_1_3,
+				TableFeaturePropType.NEXT_TABLES, tableNextTables));
+
+		/*
+		 * Set the tables to which the table miss rule can be point to from the
+		 * current table
+		 */
+		Set<TableId> tableNextTablesMiss = new HashSet<TableId>();
+		tableNextTablesMiss.add(TableId.valueOf(6));
+		tableNextTablesMiss.add(TableId.valueOf(7));
+		tableFeatures.addProp(TableFeatureFactory.createNextTablesProp(ProtocolVersion.V_1_3,
+				TableFeaturePropType.NEXT_TABLES_MISS, tableNextTablesMiss));
+
+		/* Set the actions to be supported via WRITE instruction */
+		Set<ActionType> tableWriteActions = new HashSet<ActionType>();
+		tableWriteActions.add(ActionType.OUTPUT);
+		tableFeatures.addProp(TableFeatureFactory.createActionProp(ProtocolVersion.V_1_3,
+				TableFeaturePropType.WRITE_ACTIONS, tableWriteActions));
+
+		/*
+		 * Set the actions to be supported via WRITE instruction for a table
+		 * miss rule
+		 */
+		Set<ActionType> tableWriteActionsMiss = new HashSet<ActionType>();
+		tableWriteActionsMiss.add(ActionType.OUTPUT);
+		tableFeatures.addProp(TableFeatureFactory.createActionProp(ProtocolVersion.V_1_3,
+				TableFeaturePropType.WRITE_ACTIONS_MISS, tableWriteActionsMiss));
+
+		/* Set the actions to be supported via APPLY instruction */
+		Set<ActionType> tableApplyActions = new HashSet<ActionType>();
+		tableApplyActions.add(ActionType.OUTPUT);
+		tableFeatures.addProp(TableFeatureFactory.createActionProp(ProtocolVersion.V_1_3,
+				TableFeaturePropType.APPLY_ACTIONS, tableApplyActions));
+
+		/*
+		 * Set the actions to be supported via APPLY instruction for a table
+		 * miss rule
+		 */
+		Set<ActionType> tableApplyActionsMiss = new HashSet<ActionType>();
+		tableApplyActionsMiss.add(ActionType.OUTPUT);
+		tableFeatures.addProp(TableFeatureFactory.createActionProp(ProtocolVersion.V_1_3,
+				TableFeaturePropType.APPLY_ACTIONS_MISS, tableApplyActionsMiss));
+
+		/* Set the fields the table will match on */
+		Map<OxmBasicFieldType, Boolean> tableMatchFields = new HashMap<OxmBasicFieldType, Boolean>();
+		tableMatchFields.put(OxmBasicFieldType.ETH_TYPE, false);
+		tableMatchFields.put(OxmBasicFieldType.VLAN_VID, false);
+		tableMatchFields.put(OxmBasicFieldType.IPV4_SRC, false);
+		tableFeatures.addProp(
+				TableFeatureFactory.createOxmProp(ProtocolVersion.V_1_3, TableFeaturePropType.MATCH, tableMatchFields));
+
+		return (MBodyTableFeatures) tableFeatures.toImmutable();
+	}
+
+	public MBodyTableFeatures hpeSDNTableIPSaaSFirewallTwo() {
 
 		/*
 		 * Now let us create a Table Features Request message with a new
@@ -3389,14 +3152,14 @@ public class PipelineMakerManager extends Thread {
 		tableFeatures.tableId(tblID);
 
 		/* Set a name for the new table */
-		tableFeatures.name("QoS Optimizer");
+		tableFeatures.name("IPSaaS/Firewall - B");
 
 		/* Set the metadata match & metadata write fields for the table */
 		tableFeatures.metadataWrite(0x00);
 		tableFeatures.metadataMatch(0x00);
 
 		/* Set the size of the new table */
-		tableFeatures.maxEntries(512);
+		tableFeatures.maxEntries(4096);
 
 		/* Set the instructions to be supported in the new table */
 		Set<InstructionType> tableInstrTypes = new HashSet<InstructionType>();
@@ -3439,7 +3202,6 @@ public class PipelineMakerManager extends Thread {
 		/* Set the actions to be supported via WRITE instruction */
 		Set<ActionType> tableWriteActions = new HashSet<ActionType>();
 		tableWriteActions.add(ActionType.OUTPUT);
-		tableWriteActions.add(ActionType.SET_FIELD);
 		tableFeatures.addProp(TableFeatureFactory.createActionProp(ProtocolVersion.V_1_3,
 				TableFeaturePropType.WRITE_ACTIONS, tableWriteActions));
 
@@ -3449,14 +3211,12 @@ public class PipelineMakerManager extends Thread {
 		 */
 		Set<ActionType> tableWriteActionsMiss = new HashSet<ActionType>();
 		tableWriteActionsMiss.add(ActionType.OUTPUT);
-		tableWriteActionsMiss.add(ActionType.SET_FIELD);
 		tableFeatures.addProp(TableFeatureFactory.createActionProp(ProtocolVersion.V_1_3,
 				TableFeaturePropType.WRITE_ACTIONS_MISS, tableWriteActionsMiss));
 
 		/* Set the actions to be supported via APPLY instruction */
 		Set<ActionType> tableApplyActions = new HashSet<ActionType>();
 		tableApplyActions.add(ActionType.OUTPUT);
-		tableApplyActions.add(ActionType.SET_FIELD);
 		tableFeatures.addProp(TableFeatureFactory.createActionProp(ProtocolVersion.V_1_3,
 				TableFeaturePropType.APPLY_ACTIONS, tableApplyActions));
 
@@ -3466,7 +3226,6 @@ public class PipelineMakerManager extends Thread {
 		 */
 		Set<ActionType> tableApplyActionsMiss = new HashSet<ActionType>();
 		tableApplyActionsMiss.add(ActionType.OUTPUT);
-		tableApplyActionsMiss.add(ActionType.SET_FIELD);
 		tableFeatures.addProp(TableFeatureFactory.createActionProp(ProtocolVersion.V_1_3,
 				TableFeaturePropType.APPLY_ACTIONS_MISS, tableApplyActionsMiss));
 
@@ -3474,62 +3233,13 @@ public class PipelineMakerManager extends Thread {
 		Map<OxmBasicFieldType, Boolean> tableMatchFields = new HashMap<OxmBasicFieldType, Boolean>();
 		tableMatchFields.put(OxmBasicFieldType.ETH_TYPE, false);
 		tableMatchFields.put(OxmBasicFieldType.VLAN_VID, false);
-		tableMatchFields.put(OxmBasicFieldType.IP_PROTO, false);
-		tableMatchFields.put(OxmBasicFieldType.IPV4_SRC, false);
-		tableMatchFields.put(OxmBasicFieldType.IPV4_DST, false);
-		tableMatchFields.put(OxmBasicFieldType.TCP_SRC, false);
-		tableMatchFields.put(OxmBasicFieldType.TCP_DST, false);
-		tableMatchFields.put(OxmBasicFieldType.UDP_SRC, false);
-		tableMatchFields.put(OxmBasicFieldType.UDP_DST, false);
 		tableFeatures.addProp(
 				TableFeatureFactory.createOxmProp(ProtocolVersion.V_1_3, TableFeaturePropType.MATCH, tableMatchFields));
-
-		/* Set the fields that can be modified via a WRITE instruction */
-		Map<OxmBasicFieldType, Boolean> tableWriteSetFields = new HashMap<OxmBasicFieldType, Boolean>();
-		tableWriteSetFields.put(OxmBasicFieldType.VLAN_VID, false);
-		tableWriteSetFields.put(OxmBasicFieldType.VLAN_PCP, false);
-		tableWriteSetFields.put(OxmBasicFieldType.ETH_DST, false);
-		tableWriteSetFields.put(OxmBasicFieldType.ETH_SRC, false);
-		tableFeatures.addProp(TableFeatureFactory.createOxmProp(ProtocolVersion.V_1_3,
-				TableFeaturePropType.WRITE_SETFIELD, tableWriteSetFields));
-
-		/*
-		 * Set the fields that can be modified via a WRITE instruction for a
-		 * miss rule
-		 */
-		Map<OxmBasicFieldType, Boolean> tableWriteSetFieldsMiss = new HashMap<OxmBasicFieldType, Boolean>();
-		tableWriteSetFieldsMiss.put(OxmBasicFieldType.VLAN_VID, false);
-		tableWriteSetFieldsMiss.put(OxmBasicFieldType.VLAN_PCP, false);
-		tableWriteSetFieldsMiss.put(OxmBasicFieldType.ETH_DST, false);
-		tableWriteSetFieldsMiss.put(OxmBasicFieldType.ETH_SRC, false);
-		tableFeatures.addProp(TableFeatureFactory.createOxmProp(ProtocolVersion.V_1_3,
-				TableFeaturePropType.WRITE_SETFIELD_MISS, tableWriteSetFieldsMiss));
-
-		/* Set the fields that can be modified via a APPLY instruction */
-		Map<OxmBasicFieldType, Boolean> tableApplySetFields = new HashMap<OxmBasicFieldType, Boolean>();
-		tableApplySetFields.put(OxmBasicFieldType.VLAN_VID, false);
-		tableApplySetFields.put(OxmBasicFieldType.VLAN_PCP, false);
-		tableApplySetFields.put(OxmBasicFieldType.ETH_DST, false);
-		tableApplySetFields.put(OxmBasicFieldType.ETH_SRC, false);
-		tableFeatures.addProp(TableFeatureFactory.createOxmProp(ProtocolVersion.V_1_3,
-				TableFeaturePropType.APPLY_SETFIELD, tableApplySetFields));
-
-		/*
-		 * Set the fields that can be modified via a APPLY instruction for a
-		 * miss rule
-		 */
-		Map<OxmBasicFieldType, Boolean> tableApplySetFieldsMiss = new HashMap<OxmBasicFieldType, Boolean>();
-		tableApplySetFieldsMiss.put(OxmBasicFieldType.VLAN_VID, false);
-		tableApplySetFieldsMiss.put(OxmBasicFieldType.VLAN_PCP, false);
-		tableApplySetFieldsMiss.put(OxmBasicFieldType.ETH_DST, false);
-		tableApplySetFieldsMiss.put(OxmBasicFieldType.ETH_SRC, false);
-		tableFeatures.addProp(TableFeatureFactory.createOxmProp(ProtocolVersion.V_1_3,
-				TableFeaturePropType.APPLY_SETFIELD_MISS, tableApplySetFieldsMiss));
 
 		return (MBodyTableFeatures) tableFeatures.toImmutable();
 	}
 
-	public MBodyTableFeatures hpeSDNInspectServiceTunnel() {
+	public MBodyTableFeatures hpeSDNTableHybrid() {
 
 		/*
 		 * Now let us create a Table Features Request message with a new
@@ -3543,20 +3253,19 @@ public class PipelineMakerManager extends Thread {
 		tableFeatures.tableId(tblID);
 
 		/* Set a name for the new table */
-		tableFeatures.name("Inspect Service Tunnel");
+		tableFeatures.name("Hybrid");
 
 		/* Set the metadata match & metadata write fields for the table */
 		tableFeatures.metadataWrite(0x00);
 		tableFeatures.metadataMatch(0x00);
 
 		/* Set the size of the new table */
-		tableFeatures.maxEntries(512);
+		tableFeatures.maxEntries(2);
 
 		/* Set the instructions to be supported in the new table */
 		Set<InstructionType> tableInstrTypes = new HashSet<InstructionType>();
 		tableInstrTypes.add(InstructionType.APPLY_ACTIONS);
 		tableInstrTypes.add(InstructionType.WRITE_ACTIONS);
-		tableInstrTypes.add(InstructionType.GOTO_TABLE);
 		tableInstrTypes.add(InstructionType.METER);
 
 		tableFeatures.addProp(TableFeatureFactory.createInstrProp(ProtocolVersion.V_1_3,
@@ -3566,32 +3275,15 @@ public class PipelineMakerManager extends Thread {
 		Set<InstructionType> tableInstrMissTypes = new HashSet<InstructionType>();
 		tableInstrMissTypes.add(InstructionType.APPLY_ACTIONS);
 		tableInstrMissTypes.add(InstructionType.WRITE_ACTIONS);
-		tableInstrMissTypes.add(InstructionType.GOTO_TABLE);
 		tableInstrMissTypes.add(InstructionType.METER);
 
 		tableFeatures.addProp(TableFeatureFactory.createInstrProp(ProtocolVersion.V_1_3,
 				TableFeaturePropType.INSTRUCTIONS_MISS, tableInstrMissTypes));
 
-		/*
-		 * Set the tables to which rules can be pointed to from the current
-		 * table
-		 */
-		Set<TableId> tableNextTables = new HashSet<TableId>();
-		tableFeatures.addProp(TableFeatureFactory.createNextTablesProp(ProtocolVersion.V_1_3,
-				TableFeaturePropType.NEXT_TABLES, tableNextTables));
-
-		/*
-		 * Set the tables to which the table miss rule can be point to from the
-		 * current table
-		 */
-		Set<TableId> tableNextTablesMiss = new HashSet<TableId>();
-		tableFeatures.addProp(TableFeatureFactory.createNextTablesProp(ProtocolVersion.V_1_3,
-				TableFeaturePropType.NEXT_TABLES_MISS, tableNextTablesMiss));
 
 		/* Set the actions to be supported via WRITE instruction */
 		Set<ActionType> tableWriteActions = new HashSet<ActionType>();
 		tableWriteActions.add(ActionType.OUTPUT);
-		tableWriteActions.add(ActionType.SET_FIELD);
 		tableFeatures.addProp(TableFeatureFactory.createActionProp(ProtocolVersion.V_1_3,
 				TableFeaturePropType.WRITE_ACTIONS, tableWriteActions));
 
@@ -3601,14 +3293,12 @@ public class PipelineMakerManager extends Thread {
 		 */
 		Set<ActionType> tableWriteActionsMiss = new HashSet<ActionType>();
 		tableWriteActionsMiss.add(ActionType.OUTPUT);
-		tableWriteActionsMiss.add(ActionType.SET_FIELD);
 		tableFeatures.addProp(TableFeatureFactory.createActionProp(ProtocolVersion.V_1_3,
 				TableFeaturePropType.WRITE_ACTIONS_MISS, tableWriteActionsMiss));
 
 		/* Set the actions to be supported via APPLY instruction */
 		Set<ActionType> tableApplyActions = new HashSet<ActionType>();
 		tableApplyActions.add(ActionType.OUTPUT);
-		tableApplyActions.add(ActionType.SET_FIELD);
 		tableFeatures.addProp(TableFeatureFactory.createActionProp(ProtocolVersion.V_1_3,
 				TableFeaturePropType.APPLY_ACTIONS, tableApplyActions));
 
@@ -3618,64 +3308,24 @@ public class PipelineMakerManager extends Thread {
 		 */
 		Set<ActionType> tableApplyActionsMiss = new HashSet<ActionType>();
 		tableApplyActionsMiss.add(ActionType.OUTPUT);
-		tableApplyActionsMiss.add(ActionType.SET_FIELD);
 		tableFeatures.addProp(TableFeatureFactory.createActionProp(ProtocolVersion.V_1_3,
 				TableFeaturePropType.APPLY_ACTIONS_MISS, tableApplyActionsMiss));
 
 		/* Set the fields the table will match on */
 		Map<OxmBasicFieldType, Boolean> tableMatchFields = new HashMap<OxmBasicFieldType, Boolean>();
-		tableMatchFields.put(OxmBasicFieldType.IN_PORT, false);
-		tableMatchFields.put(OxmBasicFieldType.ETH_TYPE, false);
 		tableMatchFields.put(OxmBasicFieldType.VLAN_VID, false);
-		tableMatchFields.put(OxmBasicFieldType.IPV4_SRC, false);
 		tableFeatures.addProp(
 				TableFeatureFactory.createOxmProp(ProtocolVersion.V_1_3, TableFeaturePropType.MATCH, tableMatchFields));
 
-		/* Set the fields that can be modified via a WRITE instruction */
-		Map<OxmBasicFieldType, Boolean> tableWriteSetFields = new HashMap<OxmBasicFieldType, Boolean>();
-		tableWriteSetFields.put(OxmBasicFieldType.VLAN_VID, false);
-		tableWriteSetFields.put(OxmBasicFieldType.VLAN_PCP, false);
-		tableWriteSetFields.put(OxmBasicFieldType.ETH_DST, false);
-		tableWriteSetFields.put(OxmBasicFieldType.ETH_SRC, false);
-		tableFeatures.addProp(TableFeatureFactory.createOxmProp(ProtocolVersion.V_1_3,
-				TableFeaturePropType.WRITE_SETFIELD, tableWriteSetFields));
-
-		/*
-		 * Set the fields that can be modified via a WRITE instruction for a
-		 * miss rule
-		 */
-		Map<OxmBasicFieldType, Boolean> tableWriteSetFieldsMiss = new HashMap<OxmBasicFieldType, Boolean>();
-		tableWriteSetFieldsMiss.put(OxmBasicFieldType.VLAN_VID, false);
-		tableWriteSetFieldsMiss.put(OxmBasicFieldType.VLAN_PCP, false);
-		tableWriteSetFieldsMiss.put(OxmBasicFieldType.ETH_DST, false);
-		tableWriteSetFieldsMiss.put(OxmBasicFieldType.ETH_SRC, false);
-		tableFeatures.addProp(TableFeatureFactory.createOxmProp(ProtocolVersion.V_1_3,
-				TableFeaturePropType.WRITE_SETFIELD_MISS, tableWriteSetFieldsMiss));
-
-		/* Set the fields that can be modified via a APPLY instruction */
-		Map<OxmBasicFieldType, Boolean> tableApplySetFields = new HashMap<OxmBasicFieldType, Boolean>();
-		tableApplySetFields.put(OxmBasicFieldType.VLAN_VID, false);
-		tableApplySetFields.put(OxmBasicFieldType.VLAN_PCP, false);
-		tableApplySetFields.put(OxmBasicFieldType.ETH_DST, false);
-		tableApplySetFields.put(OxmBasicFieldType.ETH_SRC, false);
-		tableFeatures.addProp(TableFeatureFactory.createOxmProp(ProtocolVersion.V_1_3,
-				TableFeaturePropType.APPLY_SETFIELD, tableApplySetFields));
-
-		/*
-		 * Set the fields that can be modified via a APPLY instruction for a
-		 * miss rule
-		 */
-		Map<OxmBasicFieldType, Boolean> tableApplySetFieldsMiss = new HashMap<OxmBasicFieldType, Boolean>();
-		tableApplySetFieldsMiss.put(OxmBasicFieldType.VLAN_VID, false);
-		tableApplySetFieldsMiss.put(OxmBasicFieldType.VLAN_PCP, false);
-		tableApplySetFieldsMiss.put(OxmBasicFieldType.ETH_DST, false);
-		tableApplySetFieldsMiss.put(OxmBasicFieldType.ETH_SRC, false);
-		tableFeatures.addProp(TableFeatureFactory.createOxmProp(ProtocolVersion.V_1_3,
-				TableFeaturePropType.APPLY_SETFIELD_MISS, tableApplySetFieldsMiss));
-
+		/* Set the match fields that can be wildcarded */
+		Map<OxmBasicFieldType, Boolean> tableWildcards = new HashMap<OxmBasicFieldType, Boolean>();
+		tableWildcards.put(OxmBasicFieldType.VLAN_VID, false);
+		tableFeatures.addProp(TableFeatureFactory.createOxmProp(ProtocolVersion.V_1_3, TableFeaturePropType.WILDCARDS,
+				tableWildcards));
+		
 		return (MBodyTableFeatures) tableFeatures.toImmutable();
 	}
-
+	
 	public void cbsGenerateFlowMod() {
 		// Set a random priority to the flow
 		int prio = 100;
